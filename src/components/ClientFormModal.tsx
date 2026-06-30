@@ -1,8 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { ITRRecord, FilingStatus, PaymentStatus } from '../types';
-import { getISTDateString, validatePAN, validateMobile } from '../utils';
+import { getISTDateString, validateMobile } from '../utils';
 import { X, AlertCircle, Save, IndianRupee } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const INDIAN_STATES_UT: string[] = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry'
+].sort();
 
 interface ClientFormModalProps {
   isOpen: boolean;
@@ -31,8 +70,9 @@ export default function ClientFormModal({
   existingRecords
 }: ClientFormModalProps) {
   const [clientName, setClientName] = useState('');
-  const [pan, setPan] = useState('');
   const [mobile, setMobile] = useState('');
+  const [state, setState] = useState('Maharashtra');
+  const [city, setCity] = useState('');
   const [assessmentYear, setAssessmentYear] = useState('2026-27');
   const [itrType, setItrType] = useState('ITR-1');
   const [filingStatus, setFilingStatus] = useState<FilingStatus>('Pending Documents');
@@ -47,7 +87,6 @@ export default function ClientFormModal({
   useEffect(() => {
     if (recordToEdit) {
       setClientName(recordToEdit.clientName);
-      setPan(recordToEdit.pan);
       setMobile(recordToEdit.mobile);
       setAssessmentYear(recordToEdit.assessmentYear);
       setItrType(recordToEdit.itrType);
@@ -56,11 +95,14 @@ export default function ClientFormModal({
       setPaymentAmount(String(recordToEdit.paymentAmount));
       setPaymentDate(recordToEdit.paymentDate || '');
       setNotes(recordToEdit.notes || '');
+      setState(recordToEdit.state || 'Maharashtra');
+      setCity(recordToEdit.city || '');
     } else {
       // Clear for new record
       setClientName('');
-      setPan('');
       setMobile('');
+      setState('Maharashtra');
+      setCity('');
       setAssessmentYear('2026-27');
       setItrType('ITR-1');
       setFilingStatus('Pending Documents');
@@ -91,26 +133,28 @@ export default function ClientFormModal({
       setError('Client Name is required.');
       return;
     }
-    if (!pan.trim()) {
-      setError('PAN Number is required.');
-      return;
-    }
     if (!mobile.trim()) {
       setError('Mobile Number is required.');
       return;
     }
 
-    // 2. Validate PAN format
-    const formattedPan = pan.trim().toUpperCase();
-    if (!validatePAN(formattedPan)) {
-      setError('Invalid PAN format. Must be 5 alphabets, 4 digits, and 1 alphabet (e.g. ABCDE1234F).');
-      return;
-    }
-
-    // 3. Validate Mobile format
+    // 2. Validate Mobile format
     const formattedMobile = mobile.trim();
     if (!validateMobile(formattedMobile)) {
       setError('Invalid Mobile Number. Must be a 10-digit number starting with 6-9.');
+      return;
+    }
+
+    // 3. Validate State and City
+    const finalState = state.trim();
+    const finalCity = city.trim();
+
+    if (!finalState) {
+      setError('Please select a State.');
+      return;
+    }
+    if (!finalCity) {
+      setError('City is required.');
       return;
     }
 
@@ -121,24 +165,13 @@ export default function ClientFormModal({
       return;
     }
 
-    // 5. Check Duplicate PAN (in-memory list check is extremely quick!)
-    const isDuplicate = existingRecords.some(r => {
-      // If editing, exclude the record being edited
-      if (recordToEdit && r.id === recordToEdit.id) return false;
-      return r.pan.toUpperCase() === formattedPan;
-    });
-
-    if (isDuplicate) {
-      setError(`Duplicate PAN Alert: A client with PAN "${formattedPan}" already exists in the system.`);
-      return;
-    }
-
     // Form is fully validated! Send data to parent component
     onSave({
       id: recordToEdit?.id,
       clientName: clientName.trim(),
-      pan: formattedPan,
       mobile: formattedMobile,
+      state: finalState,
+      city: finalCity,
       assessmentYear,
       itrType,
       filingStatus,
@@ -210,22 +243,43 @@ export default function ClientFormModal({
               />
             </div>
 
+            {/* State selection */}
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                PAN Number (10 Alphanumeric) *
+                State *
+              </label>
+              <select
+                id="state-select"
+                value={state}
+                onChange={e => setState(e.target.value)}
+                className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {!INDIAN_STATES_UT.includes(state) && (
+                  <option value={state}>{state}</option>
+                )}
+                {INDIAN_STATES_UT.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* City selection */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                City *
               </label>
               <input
-                id="pan-input"
+                id="city-input"
                 type="text"
                 required
-                value={pan}
-                onChange={e => setPan(e.target.value.toUpperCase())}
-                placeholder="ABCDE1234F"
-                maxLength={10}
-                className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                placeholder="Enter city name"
+                className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
+            {/* Mobile Number */}
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                 Mobile Number *

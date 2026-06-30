@@ -1,8 +1,10 @@
 export interface ITRRecord {
   id?: string;
   clientName: string;
-  pan: string; // 10 alphanumeric, uppercase
+  pan?: string; // Optional - 10 alphanumeric, uppercase
   mobile: string; // 10 digits
+  state: string; // Indian state
+  city: string; // Indian city
   assessmentYear: string; // e.g., "2026-27"
   itrType: string; // e.g., "ITR-1", "ITR-2"
   filingStatus: FilingStatus;

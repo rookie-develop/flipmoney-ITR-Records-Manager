@@ -1,4 +1,6 @@
 import { ITRRecord } from './types';
+import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
 
 /**
  * Returns current date string in IST timezone (YYYY-MM-DD)
@@ -109,4 +111,131 @@ export function exportToCSV(records: ITRRecord[]): void {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+/**
+ * Exports client records to Excel (.xlsx) using SheetJS
+ */
+export function exportToExcel(records: ITRRecord[]): void {
+  const data = records.map(r => ({
+    'Client Name': r.clientName,
+    'Mobile Number': r.mobile,
+    'State': r.state || 'N/A',
+    'City': r.city || 'N/A',
+    'Assessment Year': r.assessmentYear,
+    'ITR Type': r.itrType,
+    'Filing Status': r.filingStatus,
+    'Payment Status': r.paymentStatus,
+    'Payment Amount (INR)': r.paymentAmount,
+    'Payment Date (IST)': r.paymentDate || 'N/A',
+    'Notes': r.notes || '',
+    'Created Date (IST)': r.createdDateIST
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'ITR Filings');
+  
+  const nowStr = getISTDateString();
+  XLSX.writeFile(workbook, `FlipMoney_ITR_Records_${nowStr}.xlsx`);
+}
+
+/**
+ * Exports client records to PDF (.pdf) using jsPDF
+ */
+export function exportToPDF(records: ITRRecord[]): void {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // Header Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(30, 41, 59); // slate-800
+  doc.text('FlipMoney ITR Records Ledger', 14, 15);
+
+  // Subtitle
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139); // slate-500
+  const nowStr = getISTDateString();
+  doc.text(`Generated: ${nowStr} (Indian Standard Time)  |  Total filings listed: ${records.length}`, 14, 21);
+
+  // Table Headers background
+  doc.setFillColor(241, 245, 249); // slate-100
+  doc.rect(14, 26, 269, 8, 'F');
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(51, 65, 85); // slate-700
+  
+  // Headers layout
+  const columns = [
+    { name: 'Client Name', x: 16 },
+    { name: 'Mobile', x: 72 },
+    { name: 'State / City', x: 98 },
+    { name: 'AY', x: 144 },
+    { name: 'Type', x: 163 },
+    { name: 'Filing Status', x: 182 },
+    { name: 'Payment', x: 218 },
+    { name: 'Amount', x: 242 },
+    { name: 'Created Date', x: 262 }
+  ];
+
+  columns.forEach(col => {
+    doc.text(col.name, col.x, 31.5);
+  });
+
+  // Rows data
+  let y = 38;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(51, 65, 85);
+
+  records.forEach((r, idx) => {
+    // Page overflow auto-handling
+    if (y > 185) {
+      doc.addPage();
+      // Draw new headers
+      doc.setFillColor(241, 245, 249);
+      doc.rect(14, 14, 269, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      columns.forEach(col => {
+        doc.text(col.name, col.x, 19.5);
+      });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85);
+      y = 26;
+    }
+
+    // Row alternating backgrounds
+    if (idx % 2 === 1) {
+      doc.setFillColor(248, 250, 252); // slate-50
+      doc.rect(14, y - 4, 269, 6.5, 'F');
+    }
+
+    // Data drawing
+    doc.text(r.clientName.substring(0, 28), 16, y);
+    doc.text(r.mobile, 72, y);
+    doc.text(`${(r.state || '-').substring(0, 11)} / ${(r.city || '-').substring(0, 11)}`, 98, y);
+    doc.text(r.assessmentYear, 144, y);
+    doc.text(r.itrType, 163, y);
+    doc.text(r.filingStatus, 182, y);
+    doc.text(r.paymentStatus, 218, y);
+    doc.text(`Rs. ${r.paymentAmount.toLocaleString('en-IN')}`, 242, y);
+    doc.text(r.createdDateIST, 262, y);
+
+    // Row lines
+    doc.setDrawColor(241, 245, 249);
+    doc.line(14, y + 2.5, 283, y + 2.5);
+
+    y += 6.5;
+  });
+
+  doc.save(`FlipMoney_ITR_Ledger_${nowStr}.pdf`);
 }
