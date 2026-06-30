@@ -1,0 +1,6 @@
+{
+  "name": "FlipMoney ITR Records Manager",
+  "description": "A fast, reliable, and easy-to-use application for managing ITR filing records and payments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
