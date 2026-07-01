@@ -112,10 +112,16 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto w-full sm:max-w-md">
-        <div className="flex justify-center items-center gap-2 mb-2 text-blue-600">
-          <Landmark id="login-logo-icon" className="h-9 w-9" />
-          <span className="text-2xl font-extrabold tracking-tight text-slate-950">
-            Flip<span className="text-blue-500">Money</span>
+        <div className="flex justify-center items-center gap-2.5 mb-2">
+          <img 
+            id="login-logo-img" 
+            src="https://i.ibb.co/VYCTgMhq/20251216-181436.png" 
+            alt="Flipmoney Logo" 
+            className="h-10 w-auto object-contain rounded-lg" 
+            referrerPolicy="no-referrer"
+          />
+          <span className="text-2xl font-black tracking-tight text-slate-900">
+            Flipmoney
           </span>
         </div>
         <h2 className="text-center text-2xl font-extrabold text-slate-900 tracking-tight">

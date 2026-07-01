@@ -275,12 +275,16 @@ export default function Dashboard({ user }: DashboardProps) {
       <aside className="w-[240px] bg-slate-900 text-slate-200 flex flex-col justify-between shrink-0 hidden md:flex border-r border-slate-800">
         <div className="py-6 flex flex-col gap-1">
           {/* Logo */}
-          <div className="px-6 pb-8 flex items-center gap-2">
-            <div className="bg-blue-600 p-1.5 rounded-lg text-white">
-              <Landmark className="h-5 w-5" />
-            </div>
-            <div className="font-extrabold text-white text-lg tracking-tight">
-              Flip<span className="text-blue-500">Money</span>
+          <div className="px-6 pb-8 flex items-center gap-2.5">
+            <img 
+              id="sidebar-logo-img"
+              src="https://i.ibb.co/VYCTgMhq/20251216-181436.png"
+              alt="Flipmoney Logo"
+              className="h-7 w-auto object-contain rounded-md"
+              referrerPolicy="no-referrer"
+            />
+            <div className="font-black text-white text-lg tracking-tight">
+              Flipmoney
             </div>
           </div>
 
@@ -368,11 +372,15 @@ export default function Dashboard({ user }: DashboardProps) {
         <header className="h-14 bg-white border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-sm z-30">
           <div className="flex items-center gap-4 flex-1">
             {/* Simple logo for mobile header */}
-            <div className="flex items-center gap-1.5 md:hidden">
-              <div className="bg-blue-600 p-1 rounded">
-                <Landmark className="h-4 w-4 text-white" />
-              </div>
-              <span className="font-extrabold text-slate-900 text-sm tracking-tight">FlipMoney</span>
+            <div className="flex items-center gap-2 md:hidden">
+              <img 
+                id="mobile-logo-img"
+                src="https://i.ibb.co/VYCTgMhq/20251216-181436.png"
+                alt="Flipmoney Logo"
+                className="h-6 w-auto object-contain rounded"
+                referrerPolicy="no-referrer"
+              />
+              <span className="font-black text-slate-900 text-sm tracking-tight">Flipmoney</span>
             </div>
 
             {/* Quick Global Search Bar */}
@@ -476,7 +484,7 @@ export default function Dashboard({ user }: DashboardProps) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-                      ITR Filing Overview
+                      ITR Records Manager
                     </h2>
                     <p className="text-xs text-slate-500 mt-1.5">
                       Operational Ledger summary & indicators for current assessment cycles.
@@ -495,8 +503,8 @@ export default function Dashboard({ user }: DashboardProps) {
                   </button>
                 </div>
 
-                {/* Highly Polished High-Density Cards Grid (Today's ITR Count and Today's Revenue) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Highly Polished High-Density Cards Grid (Today's Filings, Today's Revenue, Total Filings, Total Revenue) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {/* Today's ITR Count */}
                   <div className="bg-white border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:shadow transition-all relative overflow-hidden flex items-center justify-between">
                     <div className="space-y-1.5">
@@ -526,9 +534,43 @@ export default function Dashboard({ user }: DashboardProps) {
                       </span>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                      <DollarSign className="h-6 w-6" />
+                      <IndianRupee className="h-6 w-6" />
                     </div>
                     <div className="absolute top-0 right-0 w-24 h-1 bg-blue-500" />
+                  </div>
+
+                  {/* Total Filings */}
+                  <div className="bg-white border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:shadow transition-all relative overflow-hidden flex items-center justify-between">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Total Filings</span>
+                      <span className="text-2xl sm:text-3xl font-black text-indigo-500 block font-mono">
+                        {records.length} <span className="text-xs text-slate-400 font-bold uppercase">Files</span>
+                      </span>
+                      <span className="text-[10px] text-indigo-600 font-medium block mt-1">
+                        All-time cumulative records
+                      </span>
+                    </div>
+                    <div className="p-3 bg-indigo-50 text-indigo-500 rounded-xl">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div className="absolute top-0 right-0 w-24 h-1 bg-indigo-500" />
+                  </div>
+
+                  {/* Total Revenue */}
+                  <div className="bg-white border border-slate-200/80 p-5 rounded-2xl shadow-sm hover:shadow transition-all relative overflow-hidden flex items-center justify-between">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Total Revenue</span>
+                      <span className="text-2xl sm:text-3xl font-black text-emerald-600 block font-mono">
+                        ₹{totalRevenue.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-[10px] text-emerald-600 font-medium block mt-1">
+                        All settled payments collected
+                      </span>
+                    </div>
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                      <TrendingUp className="h-6 w-6" />
+                    </div>
+                    <div className="absolute top-0 right-0 w-24 h-1 bg-emerald-500" />
                   </div>
                 </div>
 
