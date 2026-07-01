@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { initializeFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -19,3 +19,8 @@ export const db = initializeFirestore(app, {}, dbId);
 
 // Initialize Auth
 export const auth = getAuth(app);
+
+// Set session persistence so users are not automatically kept logged in from previous visits
+setPersistence(auth, browserSessionPersistence).catch((err) => {
+  console.error('Failed to set Auth session persistence:', err);
+});

@@ -88,9 +88,17 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       try {
         await signInWithEmailAndPassword(auth, 'demo@flipmoney.in', 'demo123');
       } catch (err: any) {
-        // If demo account doesn't exist, create it on the fly! That's incredibly bulletproof!
+        // If demo account doesn't exist, create it on the fly!
         if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-          await createUserWithEmailAndPassword(auth, 'demo@flipmoney.in', 'demo123');
+          try {
+            await createUserWithEmailAndPassword(auth, 'demo@flipmoney.in', 'demo123');
+          } catch (createErr: any) {
+            if (createErr.code === 'auth/email-already-in-use') {
+              throw new Error('The demo account "demo@flipmoney.in" already exists but its password has been changed. Please sign in with your own registered administrator account or create a new one below.');
+            } else {
+              throw createErr;
+            }
+          }
         } else {
           throw err;
         }
@@ -102,7 +110,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         setError('Email/Password sign-in is disabled in your Firebase console.');
         setShowAuthHelp(true);
       } else {
-        setError('Could not initialize demo login. Feel free to register a new account!');
+        setError(err.message || 'Could not initialize demo login. Feel free to register a new account!');
       }
     } finally {
       setLoading(false);
